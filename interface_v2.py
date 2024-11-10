@@ -1,6 +1,5 @@
-import cv2
-import numpy as np
 from Board import *
+import cv2
 
 # Paramètres du plateau
 cell_size = 80
@@ -45,20 +44,6 @@ def draw_piece(board, row, col, player):
     cv2.circle(board, center, radius, color, -1)
 
 
-
-# Mettre à jour l'affichage du plateau
-def update_board():
-    updated_board = create_board()
-    for row in range(board_size):
-        for col in range(board_size):
-            if is_black(row, col):
-                draw_piece(updated_board, row, col, 'black')
-            elif is_white(row, col):
-                draw_piece(updated_board, row, col, 'white')
-    cv2.imshow("Othello", updated_board)
-
-
-
 # Mettre à jour l'affichage du plateau en fonction des bitboards
 def update_board_from_bitboards(black_bitboard, white_bitboard):
     """Mettre à jour le plateau en fonction des bitboards des joueurs noirs et blancs."""
@@ -77,56 +62,3 @@ def update_board_from_bitboards(black_bitboard, white_bitboard):
     cv2.imshow("Othello", updated_board)
     cv2.waitKey(1)  # Nécessaire pour mettre à jour l'affichage
 
-
-
-# Gestion des événements de la souris
-def mouse_callback(event, x, y, flags, param):
-    global current_player, black, white
-    if event == cv2.EVENT_LBUTTONDOWN:
-        col = x // cell_size
-        row = y // cell_size
-        move_to_play = 1 << (row * board_size + col)
-
-        if not is_black(row, col) and not is_white(row, col):
-            print(f"Placer un pion {current_player} en ({row}, {col})")
-            # Générer les mouvements possibles pour le joueur actuel
-            own, enemy = (black, white) if current_player == 'black' else (white, black)
-            moves, directions = generate_moves(own, enemy, board_size)
-
-            # Vérifier si le mouvement est valide
-            if move_to_play in moves:
-                # Effectuer le mouvement avec make_move
-                if current_player == 'black':
-                    black, white = make_move(black, white, move_to_play, directions)
-                else:
-                    white, black = make_move(white, black, move_to_play, directions)
-
-                # Imprimer l'état du plateau
-                print_information()
-
-                # Changer de joueur
-                current_player = 'white' if current_player == 'black' else 'black'
-                update_board()
-            else:
-                print("Mouvement invalide.")
-        else:
-            print("Case déjà occupée.")
-
-# Initialisation du jeu
-reset_board()
-current_player = 'black'
-
-# Créer et afficher le plateau de départ
-board = create_board()
-update_board()
-
-# Définir la gestion des événements de la souris
-cv2.setMouseCallback("Othello", mouse_callback)
-
-# Boucle principale
-while True:
-    key = cv2.waitKey(1)
-    if key == 27:  # Appuyer sur 'Esc' pour quitter
-        break
-
-cv2.destroyAllWindows()
